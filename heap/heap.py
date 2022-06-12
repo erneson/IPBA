@@ -5,7 +5,7 @@ class Heap:
         self.n = n
         self.m = 0
         self.key = np.empty(self.n,dtype=np.float32)
-        self.item = np.empty(self.n,dtype=np.int32)
+        self.item = np.empty(self.n,dtype=np.uint32)
     
     def _Parent(self,i):
         return (i-1)//2

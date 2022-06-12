@@ -11,10 +11,10 @@ def ExtractFloatArrayFromGeoTiff(ds):
     band = ds.GetRasterBand(1)
     nodata = band.GetNoDataValue()
     arr = band.ReadAsArray()
-    
-    new_nodata = -9999.
+
+    new_nodata = -99999.
     arr = np.where(arr == nodata,new_nodata,arr)
-    
+
     return nrows,ncols,new_nodata,arr.flatten()
 
 def ExtractIntArrayFromGeoTiff(ds):
@@ -22,27 +22,20 @@ def ExtractIntArrayFromGeoTiff(ds):
     band = ds.GetRasterBand(1)
     nodata = band.GetNoDataValue()
     arr = band.ReadAsArray()
-    
-    new_nodata = -9999
-    arr = np.where(arr == nodata,float(new_nodata),arr).astype(np.int32)
+
+    new_nodata = 0
+    arr = np.where(arr == nodata,new_nodata,arr)
     
     return nrows,ncols,new_nodata,arr.flatten()
 
 def WriteGeoTiff(ds,nodata,lattice,filename):
-    d = {}
-    arr = np.zeros((lattice.nrows,lattice.ncols),dtype=np.int32)
+    arr = np.zeros((lattice.nrows,lattice.ncols),dtype=np.uint16)
     for j in range(lattice.nrows):
         for i in range(lattice.ncols):
             k = i+j*lattice.ncols
             
-            arr[j,i] = lattice.sites[k].sigma
-            
-            s = arr[j,i]
-            if s in d:
-                d[s].append((j,i))
-            else:
-                d[s] = [(j,i)]
-    
+            arr[j,i] = lattice.sites[k].status
+
     driver = gdal.GetDriverByName('GTiff')
     out_ds = driver.Create(r'results/{}.tif'.format(filename),
                            ds.RasterXSize,
@@ -52,51 +45,12 @@ def WriteGeoTiff(ds,nodata,lattice,filename):
     out_ds.SetGeoTransform(ds.GetGeoTransform())
     out_ds.SetProjection(ds.GetProjection())
     
-    N = len(d)
-    keys = sorted(d.keys())
-    
-    for t,k in enumerate(keys):
-        for j,i in d[k]:
-            arr[j,i] = t
-    
-    if keys[0] == nodata:
-        out_ds.GetRasterBand(1).SetNoDataValue(0)
-        
-        if keys[1] == -2:
-            if keys[2] == -1:
-                colors = [(0.5,0.5,0.5)]
-                colors = colors+[(1.0,1.0,1.0)]
-                colors = colors+[(0.0,0.0,0.0)]
-                colors = colors+[(0.2+0.6*rand.random(),0.2+0.6*rand.random(),0.2+0.6*rand.random()) for i in range(N-3)]
-            else:
-                colors = [(0.5,0.5,0.5)]
-                colors = colors+[(1.0,1.0,1.0)]
-                colors = colors+[(0.2+0.6*rand.random(),0.2+0.6*rand.random(),0.2+0.6*rand.random()) for i in range(N-2)]
-        else:
-            if keys[1] == -1:
-                colors = [(0.5,0.5,0.5)]
-                colors = colors+[(0.0,0.0,0.0)]
-                colors = colors+[(0.2+0.6*rand.random(),0.2+0.6*rand.random(),0.2+0.6*rand.random()) for i in range(N-2)]
-            else:
-                colors = [(0.5,0.5,0.5)]
-                colors = colors+[(0.2+0.6*rand.random(),0.2+0.6*rand.random(),0.2+0.6*rand.random()) for i in range(N-1)]
-    else:
-        if keys[0] == -2:
-            if keys[1] == -1:
-                colors = [(1.0,1.0,1.0)]
-                colors = colors+[(0.0,0.0,0.0)]
-                colors = colors+[(0.2+0.6*rand.random(),0.2+0.6*rand.random(),0.2+0.6*rand.random()) for i in range(N-2)]
-            else:
-                colors = [(1.0,1.0,1.0)]
-                colors = colors+[(0.2+0.6*rand.random(),0.2+0.6*rand.random(),0.2+0.6*rand.random()) for i in range(N-1)]
-        else:
-            if keys[0] == -1:
-                colors = colors+[(0.0,0.0,0.0)]
-                colors = colors+[(0.2+0.6*rand.random(),0.2+0.6*rand.random(),0.2+0.6*rand.random()) for i in range(N-1)]
-            else:
-                colors = [(0.2+0.6*rand.random(),0.2+0.6*rand.random(),0.2+0.6*rand.random()) for i in range(N)]
-    
-    out_ds.GetRasterBand(1).WriteArray(arr.astype(np.uint16))
+    d = np.unique(arr)
+    N = d.shape[0]
+    colors = [(0.0,0.0,0.0)]+[(0.2+0.6*rand.random(),0.2+0.6*rand.random(),0.2+0.6*rand.random()) for i in range(N)]
+
+    out_ds.GetRasterBand(1).SetNoDataValue(0)
+    out_ds.GetRasterBand(1).WriteArray(arr)
     
     band = out_ds.GetRasterBand(1)
     color_table = gdal.ColorTable()
