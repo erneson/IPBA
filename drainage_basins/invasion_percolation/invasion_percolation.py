@@ -1,6 +1,6 @@
 import numpy as np
 
-def InvasionPercolation(lattice,heap,k):
+def InvasionPercolation(lattice,heap,k,pbc):
     if lattice.sites[k].sigma == 1:
         for i in lattice.burner1:
             lattice.sites[i].status1 = np.uint8(0)
@@ -32,7 +32,7 @@ def InvasionPercolation(lattice,heap,k):
                 stop = True
             
             if stop == False:
-                for s in lattice.GetNeighbors(t):
+                for s in lattice.GetNeighbors(t,pbc):
                     if lattice.sites[s].status1 == 0:
                         lattice.burner1.append(np.uint32(s))
                         lattice.sites[s].status1 = np.uint8(1)

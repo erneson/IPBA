@@ -11,6 +11,7 @@ from drainage_basins import SetDrainageBasins
 filename0 = sys.argv[1]
 filename1 = sys.argv[2]
 seed = int(sys.argv[3])
+pbc = sys.argv[4] == 'T'
 
 random.seed(seed)
 
@@ -36,7 +37,7 @@ heap = Heap(lattice.n)
 # INPUT
 
 # DRAINAGE_BASINS
-SetDrainageBasins(lattice,heap)
+SetDrainageBasins(lattice,heap,pbc)
 # DRAINAGE_BASINS
 
 # OUTPUT
