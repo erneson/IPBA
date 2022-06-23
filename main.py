@@ -1,4 +1,4 @@
-# python -B main.py belm_crop str1330_link 42
+# python -B main.py belm_crop str1330_link 42 F
 import sys
 import random
 import numpy as np
