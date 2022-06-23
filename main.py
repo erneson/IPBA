@@ -30,24 +30,29 @@ for k in range(lattice.n):
 
 _,arr1 = ReadGeoTiff(filename1,False) # int array
 
+isfilled = False
 for k in range(lattice.n):
     if arr1[k] > 0:
+        isfilled = True
         lattice.sites[k].label = np.uint16(arr1[k])
 
-heap = Heap(lattice.n)
-# INPUT
+if isfilled:
+    heap = Heap(lattice.n)
+    # INPUT
 
-# DRAINAGE_BASINS
-SetDrainageBasins(lattice,heap,ispbc)
-# DRAINAGE_BASINS
+    # DRAINAGE_BASINS
+    SetDrainageBasins(lattice,heap,ispbc)
+    # DRAINAGE_BASINS
 
-for k in range(lattice.n):
-    del lattice.sites[k].height
-    del lattice.sites[k].sigma
-    del lattice.sites[k].label
-    del lattice.sites[k].parent
-    del lattice.sites[k].status1
+    for k in range(lattice.n):
+        del lattice.sites[k].height
+        del lattice.sites[k].sigma
+        del lattice.sites[k].label
+        del lattice.sites[k].parent
+        del lattice.sites[k].status1
 
-# OUTPUT
-WriteGeoTiff(info,lattice,filename0)
-# OUTPUT
+    # OUTPUT
+    WriteGeoTiff(info,lattice,filename0)
+    # OUTPUT
+else:
+    print('The dataset {} has no sink!'.format(filename1))
