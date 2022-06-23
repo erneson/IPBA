@@ -41,6 +41,13 @@ heap = Heap(lattice.n)
 SetDrainageBasins(lattice,heap,ispbc)
 # DRAINAGE_BASINS
 
+for k in range(lattice.n):
+    del lattice.sites[k].height
+    del lattice.sites[k].sigma
+    del lattice.sites[k].label
+    del lattice.sites[k].parent
+    del lattice.sites[k].status1
+
 # OUTPUT
 WriteGeoTiff(info,lattice,filename0)
 # OUTPUT
