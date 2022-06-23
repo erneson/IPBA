@@ -1,1 +1,1 @@
-from .geotiff import ReadGeoTiff,ExtractFloatArrayFromGeoTiff,ExtractIntArrayFromGeoTiff,WriteGeoTiff
+from .geotiff import ReadGeoTiff,WriteGeoTiff

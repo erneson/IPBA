@@ -3,7 +3,7 @@ import sys
 import random
 import numpy as np
 
-from geotiff import ReadGeoTiff,ExtractFloatArrayFromGeoTiff,ExtractIntArrayFromGeoTiff,WriteGeoTiff
+from geotiff import ReadGeoTiff,WriteGeoTiff
 from lattice import Lattice
 from heap import Heap
 from drainage_basins import SetDrainageBasins
@@ -11,23 +11,24 @@ from drainage_basins import SetDrainageBasins
 filename0 = sys.argv[1]
 filename1 = sys.argv[2]
 seed = int(sys.argv[3])
-pbc = sys.argv[4] == 'T'
+ispbc = sys.argv[4] == 'T'
 
 random.seed(seed)
 
 # INPUT
-ds0 = ReadGeoTiff(filename0)
-nrows,ncols,nodata0,arr0 = ExtractFloatArrayFromGeoTiff(ds0)
+info,arr0 = ReadGeoTiff(filename0) # float array
+nrows = info['RasterYSize']
+ncols = info['RasterXSize']
+nodata = info['NoDataValue']
 
 lattice = Lattice(nrows,ncols,arr0)
 
 for k in range(lattice.n):
-    if arr0[k] == nodata0:
-        lattice.sites[k].height = np.float32(nodata0)
+    if arr0[k] == nodata:
+        lattice.sites[k].height = np.float32(nodata)
         lattice.sites[k].sigma = np.uint32(0)
 
-ds1 = ReadGeoTiff(filename1)
-nrows,ncols,nodata1,arr1 = ExtractIntArrayFromGeoTiff(ds1)
+_,arr1 = ReadGeoTiff(filename1,False) # int array
 
 for k in range(lattice.n):
     if arr1[k] > 0:
@@ -37,12 +38,9 @@ heap = Heap(lattice.n)
 # INPUT
 
 # DRAINAGE_BASINS
-SetDrainageBasins(lattice,heap,pbc)
+SetDrainageBasins(lattice,heap,ispbc)
 # DRAINAGE_BASINS
 
 # OUTPUT
-WriteGeoTiff(ds0,nodata1,lattice,filename0)
+WriteGeoTiff(info,lattice,filename0)
 # OUTPUT
-
-del ds1
-del ds0
